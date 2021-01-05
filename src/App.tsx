@@ -25,21 +25,23 @@ const useSearchMovies = () => useDebouncedSearch((text: string) => searchMoviesA
 
 function App() {
   const { query, setQuery, searchResults } = useSearchMovies();
+  const [queryUpdated, setQueryUpdated] = useState(false);
   const [movies, setMovies] = useState<Movie[]>([]);
   const [nominations, setNominations] = useState<Movie[]>([]);
   const [openNotification, setOpenNotification] = useState(false);
   
   useEffect(() => {
-    if (!searchResults.loading) { // wait for debounce to resolve
+    if (!searchResults.loading && queryUpdated === true) { // wait for debounce to resolve
       setMovies(searchResults.result);
     }
-  }, [searchResults]); // Listen to search results and re-render
+  }, [searchResults, queryUpdated]); // Listen to search results and re-render
 
   /**
    * Handle user search input.
    * @param e the search event. 
    */
   const handleQuery = async (e: any) => {
+    setQueryUpdated(true);
     setQuery(e.target.value);
   }
 
@@ -48,9 +50,12 @@ function App() {
    * @param nomination The nominated movie.
    */
   const handleNomination = async (nomination: Movie) => {
+    setQueryUpdated(false);
     // Remove movie from movie list
     const curMovies = [...movies];
     const idx = curMovies.indexOf(nomination);
+    console.log(curMovies);
+    console.log(idx);
     if (idx > -1) {
       curMovies.splice(idx, 1);
       setMovies(curMovies);
@@ -71,6 +76,7 @@ function App() {
    * @param nomination The nominated movie.
    */
   const handleRemoveNomination = async (movie: Movie) => {
+    setQueryUpdated(false);
     // Check if nominations is full before removing nomination
     const isFull = nominations.length === 5;
 
