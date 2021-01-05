@@ -1,68 +1,39 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * Main App Component
+ * - Consumes custom debounce hook
+ * - Manages user input, movie and nomination states
+ */
+
+import { useEffect, useState } from 'react';
 import List from './components/List';
 import SearchBar from './components/SearchBar';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Movie } from './models/movie';
 import { ListType } from './constants/button';
 import ShoppyConstants from './constants/constants';
+import { useDebouncedSearch } from './hooks/debounce';
+import { searchMoviesAsync } from './api/movie';
+
 import './styles/App.css';
 
 // TODO: Add LocalStorage to preserve nominations
 // TODO: Update Card UI for posters
 // TODO: Add unit tests
 
+// Consume custom debounce hook
+const useSearchMovies = () => useDebouncedSearch((text: string) => searchMoviesAsync(text));
+
 function App() {
-  const [query, setQuery] = useState<string>('');
+  const { query, setQuery, searchResults } = useSearchMovies();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [nominations, setNominations] = useState<Movie[]>([]);
   const [openNotification, setOpenNotification] = useState(false);
   
-  /**
-   * Component hook for mounting component & when query state updates.
-   */
   useEffect(() => {
-    /**
-     * Utility function to filter search results.
-     * @param movies Unfiltered movies list.
-     */
-    const getFilteredMovies = (movies: Array<any>) => {
-      const filteredMovies: Movie[] = [];
-      for (const movie of movies) {
-        if (movie.Type === 'movie') {
-          // Attach the query to these objects to cache what the search term was!
-          filteredMovies.push(
-            { title: movie.Title || '', 
-              year: movie.Year || '', 
-              poster: movie.Poster || '',
-              query, disabled: false }); // custom fields 
-        }
-      }
-      return filteredMovies
+    if (!searchResults.loading) { // wait for debounce to resolve
+      setMovies(searchResults.result);
     }
-
-    /**
-     * Utility function to fetch api data. 
-     */
-    const fetchData = async () => {
-      // Make api request (url is https://ombdapi.com/?s=<search-term>&apiKey=<api-key>)
-      return await fetch(`${ShoppyConstants.OMBD_API_PREFIX}?s=${query}&apikey=${ShoppyConstants.OMBD_API_KEY}`)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-          // Ensure valid response from the API
-          if (data.Response === "True") {
-            setMovies(getFilteredMovies(data.Search));
-          } else if (query === '') {
-            setMovies([]);
-          } else {
-            // Don't do anything - want to persist data if possible
-          }
-        })
-        .catch(err => console.log(err));
-    }
-
-    fetchData()
-  }, [query]); // Listen to user input and re-render
+  }, [searchResults]); // Listen to search results and re-render
 
   /**
    * Handle user search input.
