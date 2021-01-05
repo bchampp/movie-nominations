@@ -1,18 +1,25 @@
+/**
+ * Movie Card Component - renders movie information and nominate/remove button.
+ */
+
 import React from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles'
+import Collapse from '@material-ui/core/Collapse';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardMedia from '@material-ui/core/CardMedia';
-import IconButton from '@material-ui/core/IconButton';
 import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Collapse from '@material-ui/core/Collapse';
+import { ListType } from '../constants/button';
+import { Movie } from '../models/movie';
+import '../styles/App.css';
 
 const useStyles = makeStyles((theme) => ({
     root: {
-      maxWidth: 345,
+    //   maxWidth: 345,
     },
     media: {
       height: 0,
@@ -30,25 +37,27 @@ const useStyles = makeStyles((theme) => ({
       },
   }));
 
-export default function MovieCard({movie, buttonText, onSelect }) {
+export default function MovieCard({movie, type, onSelect }
+    : {movie: Movie, type: ListType, onSelect: any}) {
     const classes = useStyles();
     const [expanded, setExpanded] = React.useState(false);
+    
+    const buttonText = type;
 
     const handleExpandClick = () => {
         setExpanded(!expanded);
-      };
+    };
 
     return (
-        <div className="movie-card">
+        <li className="list-item">
             <Card className={classes.root}>
                 <CardHeader
-                    title={movie.Title}
-                    subheader={movie.Year}
+                    title={movie.title}
+                    subheader={movie.year}
                 />
-                <CardActions disableSpacing>
-                    <IconButton aria-label="add to favorites" onClick={() => onSelect(movie)}>
+                    <Button variant="contained" disabled={movie.disabled} onClick={() => onSelect(movie)}>
                         {buttonText}
-                    </IconButton>
+                    </Button>
                     <IconButton
                         className={clsx(classes.expand, {
                             [classes.expandOpen]: expanded,
@@ -59,17 +68,17 @@ export default function MovieCard({movie, buttonText, onSelect }) {
                         >
                         <ExpandMoreIcon />
                     </IconButton>
-                </CardActions>
+                {/* Show movie poster when user selects "show more" */}
                 <Collapse in={expanded} timeout="auto" unmountOnExit>
                     <CardContent>
                     <CardMedia
                         className={classes.media}
-                        image={movie.Poster}
-                        title="Paella dish"
+                        image={movie.poster}
+                        title={movie.title}
                     />
                     </CardContent>
                 </Collapse>
             </Card>
-        </div>
+        </li>
     )
 }
