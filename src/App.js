@@ -40,7 +40,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       console.log("Fetching data");
-      return await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${api_key}`)
+      return await fetch(`https://www.omdbapi.com/?s=${query}&apikey=${api_key}`)
         .then(response => response.json())
         .then(data => {
           console.log(data);
