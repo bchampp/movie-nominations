@@ -11,18 +11,25 @@ import { useState } from 'react';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import useConstant from 'use-constant';
 import { useAsync } from 'react-async-hook';
+import { SearchRequest } from '../api/movie';
 
-export const useDebouncedSearch = (searchFunction: any) => {
-    const [query, setQuery] = useState('');
+export const useDebouncedSearch = (initialState: SearchRequest, searchFunction: any) => {
+    const [query, setQuery] = useState<SearchRequest>({
+      s: initialState.s,
+      type: initialState.type,
+      year: initialState.year,
+      page: initialState.page,
+      query: initialState.query
+    });
   
     const debouncedSearchFunction = useConstant(() =>
       AwesomeDebouncePromise(searchFunction, 300)
     );
   
     // Callback run everytime text changes, but through debounce
-    const searchResults = useAsync(
+    const movieIds = useAsync(
       async () => {
-        if (query.length === 0) {
+        if (query.s.length === 0) {
           return [];
         } else {
           return debouncedSearchFunction(query);
@@ -35,6 +42,6 @@ export const useDebouncedSearch = (searchFunction: any) => {
     return {
       query,
       setQuery,
-      searchResults,
+      movieIds,
     };
   };

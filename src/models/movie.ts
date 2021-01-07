@@ -4,4 +4,5 @@ export interface Movie {
     poster: string;
     query: string;
     disabled: boolean;
+    id: string;
 };

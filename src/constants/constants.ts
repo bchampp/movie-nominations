@@ -2,7 +2,7 @@ export default class ShoppyConstants {
     /**
      * OMBD API prefix url. 
      */
-    public static OMBD_API_PREFIX = "https://www.omdbapi.com/";
+    public static OMBD_API_PREFIX = "https://www.omdbapi.com/?";
 
     /**
      * OMBD Api Key.
