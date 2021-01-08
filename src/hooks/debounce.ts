@@ -27,7 +27,7 @@ export const useDebouncedSearch = (initialState: SearchRequest, searchFunction: 
     );
   
     // Callback run everytime text changes, but through debounce
-    const movieIds = useAsync(
+    const searchResult = useAsync(
       async () => {
         if (query.s.length === 0) {
           return [];
@@ -42,6 +42,6 @@ export const useDebouncedSearch = (initialState: SearchRequest, searchFunction: 
     return {
       query,
       setQuery,
-      movieIds,
+      searchResult,
     };
   };

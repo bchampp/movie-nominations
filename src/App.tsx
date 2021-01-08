@@ -12,9 +12,9 @@ import { Movie } from './models/movie';
 import { ListType } from './constants/button';
 import ShoppyConstants from './constants/constants';
 import { useDebouncedSearch } from './hooks/debounce';
-import { getMovieAsync, searchMoviesAsync } from './api/movie';
+import { getMovieById, searchMovies } from './api/movie';
 import './styles/App.css';
-import { generateNominationsString, generateQueryLink, getInitialNominations, parseQueryString } from './util/state';
+import { generateNominationsString, generateQueryLink, getSavedNominations, getSavedQuery } from './util/state';
 
 interface SearchRequest {
   s: string;
@@ -30,35 +30,44 @@ interface SearchRequest {
 // TODO: Add unit tests
 
 // Consume custom debounce hook
-const useSearchMovies = (initialState: SearchRequest) => useDebouncedSearch(initialState, ((query: SearchRequest) => searchMoviesAsync(query)));
+const useSearchMovies = (initialState: SearchRequest) => useDebouncedSearch(initialState, ((query: SearchRequest) => searchMovies(query)));
 
 function App() {
   // Handle initial setup 
-  const initialQuery = parseQueryString(window.localStorage.getItem('query') || '');
-  const { query, setQuery, movieIds } = useSearchMovies(initialQuery);
+  const initialQuery = getSavedQuery();
+  const initialNominationIds = getSavedNominations();
+  const { query, setQuery, searchResult } = useSearchMovies(initialQuery);
 
-  // Handle movie and nomination lists
   const [movies, setMovies] = useState<Movie[]>([]); 
-  const initialNominationIds = getInitialNominations();
-  const [nominationIds, setNominationIds] = useState(initialNominationIds);
+
   const [nominations, setNominations] = useState<Movie[]>([]);
 
   // Notification if 5 nominations reached.
   const [openNotification, setOpenNotification] = useState(false);
 
   useEffect(() => {
-    window.localStorage.setItem('nominations', generateNominationsString(nominations))
+    async function getMovies(ids: string[], isNomination: boolean) {
+      const fullMovies: Movie[] = [];
+      for (const id of ids) {
+        const fullMovie = await getMovieById(id, query.s);
+        fullMovies.push(fullMovie);
+      }
+      if (isNomination) {
+        setNominations(fullMovies);
+      } else {
+        setMovies(fullMovies);
+      }
+    }
+
+    if (initialNominationIds.length > 0) {
+      getMovies(initialNominationIds, true);
+    }
+
+    if (!searchResult.loading) {
+      getMovies(searchResult.result, false);
+    }
     
-    if (nominationIds) {
-      // const noms = getMovieAsync()
-      console.log("Test");
-    }
-
-    if (!movieIds.loading) { // wait for debounce to resolve
-      setMovies(movieIds.result);
-    }
-
-  }, [movieIds, nominationIds]); // Listen to search results and re-render
+  }, [query, searchResult.loading, searchResult.result]); // Listen to if searchResults have loaded or initialNominationIds
 
   /**
    * Handle user search input.
@@ -87,10 +96,12 @@ function App() {
     }
 
     // Set nominations
-    setNominations([...nominations, nomination]);
+    const curNominations = [...nominations, nomination];
+    window.localStorage.setItem('nominations', generateNominationsString(curNominations))
+    setNominations(curNominations);
 
     // Check if they've hit max nominations
-    if (nominations.length === 4) {
+    if (nominations.length === 5) {
       setOpenNotification(true);
       toggleDisabled(true);
     }
@@ -109,6 +120,7 @@ function App() {
     const idx = nominations.indexOf(movie);
     if (idx > -1) {
       curNominations.splice(idx, 1);
+      window.localStorage.setItem('nominations', generateNominationsString(curNominations))
       setNominations(curNominations);
     }
 
@@ -146,14 +158,14 @@ function App() {
       <div className="vertical-spacer" />
       <div className="lists">
         <List
-          items={movies}
+          movies={movies}
           type={ListType.RESULTS}
           title={query.s === '' ? 'Results' : `Results for "${query.s}"`}
           onSelect={handleNomination}
         />
         <div className="horizontal-spacer"></div>
         <List
-          items={nominations}
+          movies={nominations}
           type={ListType.NOMINATIONS}
           title={ShoppyConstants.NOMINATIONS_LIST_TITLE}
           onSelect={handleRemoveNomination}

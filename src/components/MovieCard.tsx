@@ -49,7 +49,7 @@ export default function MovieCard({movie, type, onSelect }
     };
 
     return (
-        <li className="list-item">
+        <li className="list-item" key={movie.id}>
             <Card className={classes.root}>
                 <CardHeader
                     title={movie.title}

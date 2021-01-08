@@ -1,8 +1,23 @@
 export interface Movie {
-    title: string;
-    year: string;
-    poster: string;
+    id: string;
     query: string;
     disabled: boolean;
-    id: string;
+    actors: string;
+    boxOffice: string;
+    country: string;
+    director: string;
+    genre: string;
+    language: string;
+    metaScore: string;
+    plot: string;
+    poster: string;
+    production: string;
+    rated: string;
+    ratings: string[];
+    release: string;
+    runtime: string;
+    title: string;
+    imdbRating: string;
+    imdbVotes: string;
+    year: string;
 };
