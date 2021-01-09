@@ -1,7 +1,8 @@
 /**
- * Main App Component
+ *        Main App Component
  * - Consumes custom debounce hook
  * - Manages user input, movie and nomination states
+ * - Handles fetching data saved in local storage
  */
 
 import { useEffect, useState } from 'react';
@@ -14,7 +15,12 @@ import ShoppyConstants from './constants/constants';
 import { useDebouncedSearch } from './hooks/debounce';
 import { getMovieById, searchMovies } from './api/movie';
 import './styles/App.css';
-import { generateNominationsString, generateQueryLink, getSavedNominations, getSavedQuery } from './util/state';
+import { 
+  generateNominationsString, 
+  generateQueryUrl, 
+  getSavedNominations, 
+  getSavedQuery, 
+  getSavedNominationIds } from './util/state';
 
 interface SearchRequest {
   s: string;
@@ -29,45 +35,85 @@ interface SearchRequest {
 // TODO: Update Card UI for posters
 // TODO: Add unit tests
 
-// Consume custom debounce hook
+
+// Consume the debounce hook
 const useSearchMovies = (initialState: SearchRequest) => useDebouncedSearch(initialState, ((query: SearchRequest) => searchMovies(query)));
 
 function App() {
-  // Handle initial setup 
+  // Fetch initial state from local storage (if it exists)
   const initialQuery = getSavedQuery();
-  const initialNominationIds = getSavedNominations();
+  const [initialNominations, setInitialNominations] = useState(getSavedNominations());
+
+  // Initialize state variables
   const { query, setQuery, searchResult } = useSearchMovies(initialQuery);
-
-  const [movies, setMovies] = useState<Movie[]>([]); 
-
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [nominations, setNominations] = useState<Movie[]>([]);
-
-  // Notification if 5 nominations reached.
+  const [moviesLoading, setMoviesLoading] = useState(true); // Render loaders while data is being fetched
+  const [nominationsLoading, setNominationsLoading] = useState(true); // Render loaders while data is being fetched
   const [openNotification, setOpenNotification] = useState(false);
 
+  /**
+   * Component lifecycle hook to run at component mounting, unmounting and when dependencies update.
+   * 
+   * @listens to initial nominiations, user query and search results from the debounce search hook.
+   */
   useEffect(() => {
-    async function getMovies(ids: string[], isNomination: boolean) {
+    /**
+     * Fetch all information about movies given an array of movie ID's and set movie & nomination state.
+     * 
+     * @param ids Array of imdb IDs for the movies to be fetched.
+     * @param isNomination Boolean if the movie to be fetched is a nomination (for loading saved nominations).
+     */
+    async function fetchMovies(ids: string[], queries: string[]) {
       const fullMovies: Movie[] = [];
-      for (const id of ids) {
-        const fullMovie = await getMovieById(id, query.s);
-        fullMovies.push(fullMovie);
+      const nominatedIds = getSavedNominationIds(); // Can't use initialNominations since they may have updated.
+
+      for (var i = 0; i < ids.length; i++) { // Loop over the ID's
+        const id = ids[i];
+        if (!nominatedIds.includes(id) || queries.length > 0) {
+          const s = queries.length > 0 ? queries[i] : query.s; // If loading nominations, each has/had its own query. Otherwise its the search term.
+          const fullMovie = await getMovieById(id, s); // Associate search term to movie.
+          if (nominatedIds.length === 5 && queries.length === 0) {
+            fullMovie.disabled = true;
+            setOpenNotification(true);
+          }
+          fullMovies.push(fullMovie);
+        }
       }
-      if (isNomination) {
+
+      if (queries.length > 0) {
         setNominations(fullMovies);
       } else {
         setMovies(fullMovies);
       }
     }
 
-    if (initialNominationIds.length > 0) {
-      getMovies(initialNominationIds, true);
+    setMoviesLoading(true);
+
+    // Set initial nominations
+    if (initialNominations.length > 0) {
+      setNominationsLoading(true);
+      const ids: string[] = []; const queries: string[] = [];
+      initialNominations.forEach((n: any) => {
+        ids.push(n.id); queries.push(n.query);
+      })
+      fetchMovies(ids, queries);
+      setNominationsLoading(false);
     }
 
+    // Set movies from search result
     if (!searchResult.loading) {
-      getMovies(searchResult.result, false);
+      setNominationsLoading(false);
+      fetchMovies(searchResult.result, []);
+      setMoviesLoading(false);
     }
-    
-  }, [query, searchResult.loading, searchResult.result]); // Listen to if searchResults have loaded or initialNominationIds
+
+  },
+    [initialNominations,
+      searchResult.loading,
+      searchResult.result,
+      query.s
+    ]);
 
   /**
    * Handle user search input.
@@ -75,21 +121,25 @@ function App() {
    */
   const handleQuery = async (e: any) => {
     const newQuery = { ...query, s: e.target.value };
-    const url = generateQueryLink(newQuery);
+    const url = generateQueryUrl(newQuery);
     window.localStorage.setItem('query', url);
-    setQuery({ ...newQuery, query: url })
+    setQuery({ ...newQuery, query: url });
   }
 
   /**
    * Handle when user selects a movie for nomination.
    * @param nomination The nominated movie.
    */
-  const handleNomination = async (nomination: Movie) => {
-    // Remove movie from movie list
+  const handleNomination = (nomination: Movie) => {
+    // Remove movie from movie list and set disabled if needed.
     const curMovies = [...movies];
+    if (nominations.length === 4) {
+      setOpenNotification(true);
+      curMovies.forEach(n => {
+        n.disabled = true;
+      })
+    }
     const idx = curMovies.indexOf(nomination);
-    console.log(curMovies);
-    console.log(idx);
     if (idx > -1) {
       curMovies.splice(idx, 1);
       setMovies(curMovies);
@@ -97,14 +147,11 @@ function App() {
 
     // Set nominations
     const curNominations = [...nominations, nomination];
+    curNominations.forEach(n => {
+      n.disabled = false;
+    });
     window.localStorage.setItem('nominations', generateNominationsString(curNominations))
     setNominations(curNominations);
-
-    // Check if they've hit max nominations
-    if (nominations.length === 5) {
-      setOpenNotification(true);
-      toggleDisabled(true);
-    }
   }
 
   /**
@@ -129,26 +176,22 @@ function App() {
       if (movie.query === query.s) {
         const curMovies = [...movies];
         curMovies.unshift(movie);
+        curMovies.forEach(n => {
+          n.disabled = false;
+        })
         setMovies(curMovies);
       }
     }
 
     // Edge case for when they removed the fifth element
     if (isFull) {
-      toggleDisabled(false);
       setOpenNotification(false);
+      const curMovies = [...movies];
+      curMovies.forEach(n => {
+        n.disabled = false;
+      })
+      setMovies(curMovies);
     }
-  }
-
-  /**
-   * Utility to toggle if nominations are disabled or not.
-   */
-  const toggleDisabled = (disabled: boolean) => {
-    const disabledMovies: Movie[] = [];
-    for (const movie of movies) {
-      disabledMovies.push({ ...movie, disabled });
-    }
-    setMovies(disabledMovies)
   }
 
   return (
@@ -162,6 +205,7 @@ function App() {
           type={ListType.RESULTS}
           title={query.s === '' ? 'Results' : `Results for "${query.s}"`}
           onSelect={handleNomination}
+          loading={moviesLoading}
         />
         <div className="horizontal-spacer"></div>
         <List
@@ -169,6 +213,7 @@ function App() {
           type={ListType.NOMINATIONS}
           title={ShoppyConstants.NOMINATIONS_LIST_TITLE}
           onSelect={handleRemoveNomination}
+          loading={nominationsLoading}
         />
       </div>
       <Snackbar

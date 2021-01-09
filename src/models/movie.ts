@@ -1,7 +1,7 @@
 export interface Movie {
-    id: string;
     query: string;
     disabled: boolean;
+    id: string;
     actors: string;
     boxOffice: string;
     country: string;

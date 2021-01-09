@@ -13,6 +13,8 @@ export interface SearchRequest {
   query: string; 
 }
 
+// TODO: Chain the .then() for these functions
+
 /**
  * Search function for OMDB API. Consumed by custom debounce hook.
  * @param request. The Query Request object.
@@ -35,14 +37,18 @@ export const searchMovies = async (request: SearchRequest): Promise<string[]> =>
   }
 }
 
-/* Get Functionality */
-export const getMovieById = async (id: string, searchTerm: string): Promise<Movie> => {
+/**
+ * 
+ * @param id The ID of the movie to be searched.
+ * @return A full movie object.
+ */
+export const getMovieById = async (id: string, query: string): Promise<Movie> => {
   const res: any = await fetch(`${ShoppyConstants.OMBD_API_PREFIX}i=${id}&apikey=${ShoppyConstants.OMBD_API_KEY}`)
     .catch(err => console.log(err));
   const movie = await res.json();
   return {
     id,
-    query: searchTerm,
+    query,
     disabled: false,
     actors: movie.Actors,
     boxOffice: movie.BoxOffice,
@@ -64,22 +70,3 @@ export const getMovieById = async (id: string, searchTerm: string): Promise<Movi
     year: movie.Year
   }
 }
-
-// /**
-//  * Utility function to filter search results.
-//  * @param movies Unfiltered movies list.
-//  */
-// export const getFilteredMovies = (movies: Array<any>, query: string) => {
-//   const filteredMovies: Movie[] = [];
-//   for (const movie of movies) {
-//     // Attach the query to these objects to cache what the search term was!
-//     filteredMovies.push(
-//       {
-//         title: movie.Title || null,
-//         year: movie.Year || null,
-//         poster: movie.Poster || null,
-//         query, id: movie.imdbID, disabled: false
-//       }); // custom fields 
-//   }
-//   return filteredMovies
-// }
