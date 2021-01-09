@@ -8,30 +8,39 @@ import { ListType } from '../constants/button';
 import ShoppyConstants from '../constants/constants';
 import '../styles/App.css';
 
-export default function List({ items, onSelect, title, type } 
-    : {items: Movie[], onSelect: any, title: string, type: ListType}) {
-    return (
-        <div className="list-container">
-            <h3 className="list-title">{title}</h3>
-            { items && items.length > 0 ?
-                <ul className="list">
-                    { items.map(movie => {
-                        return (
-                            <MovieCard movie={movie} type={type} onSelect={onSelect} />
-                            );
-                        })
-                    }
-                </ul>
-                :
-                <div>
-                    {
-                        type === ListType.RESULTS ? 
-                        ShoppyConstants.RESULTS_EMPTY_MESSAGE
-                        : 
-                        ShoppyConstants.NOMINATIONS_EMPTY_MESSAGE
+export default function List({ movies, onSelect, title, type, loading } 
+    : {movies: Movie[], onSelect: any, title: string, type: ListType, loading: boolean}) {
+        if (loading) {
+            return (
+                <div className="list-container">
+                <h3 className="list-title">{title}</h3>
+                Loading...
+                </div>
+            )
+        } else {
+            return (
+                <div className="list-container">
+                    <h3 className="list-title">{title}</h3>
+                    { movies && movies.length > 0 ?
+                        <ul className="list">
+                            { movies.map(movie => {
+                                return (
+                                    <MovieCard movie={movie} type={type} onSelect={onSelect} />
+                                    );
+                                })
+                            }
+                        </ul>
+                        :
+                        <div>
+                            {
+                                type === ListType.RESULTS ? 
+                                ShoppyConstants.RESULTS_EMPTY_MESSAGE
+                                : 
+                                ShoppyConstants.NOMINATIONS_EMPTY_MESSAGE
+                            }
+                        </div>
                     }
                 </div>
-            }
-        </div>
-    )
+            )
+        }
 }
