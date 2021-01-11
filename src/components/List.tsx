@@ -2,12 +2,13 @@
  * List Component - used to contain a list of MovieCards.
  */
 import { useState } from 'react';
+import { Flipper } from 'react-flip-toolkit';
 import { MovieCard, ExpandedMovieCard } from './MovieCard'
 import { Movie } from '../models/movie';
 import { ListType } from '../constants/button';
 import ShoppyConstants from '../constants/constants';
+
 import '../styles/App.css';
-import { Flipper } from 'react-flip-toolkit';
 
 export default function List({ movies, onSelect, type, query } 
     : {movies: Movie[], onSelect: any, type: ListType, query: string}) {
@@ -45,7 +46,6 @@ export default function List({ movies, onSelect, type, query }
                 <ul className="list">
                     { movies.map(movie => {
                         return (
-                            // TODO: with Key
                             <li key={movie.id}>
                                 { openCard === movie.id ? (
                                     <ExpandedMovieCard

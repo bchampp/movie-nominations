@@ -8,11 +8,11 @@ import { useEffect, useState } from 'react';
 import List from './components/List';
 import SearchBar from './components/SearchBar';
 import Snackbar from '@material-ui/core/Snackbar';
-import { Movie } from './models/movie';
-import { ListType } from './constants/button';
 import ShoppyConstants from './constants/constants';
+import { ListType } from './constants/button';
 import { useDebouncedSearch } from './hooks/debounce';
-import { getMovieById, searchMovies } from './api/movie';
+import { SearchRequest, getMovieById, searchMovies } from './api/movie';
+import { Movie } from './models/movie';
 import {
     generateNominationsString,
     generateQueryUrl,
@@ -20,13 +20,9 @@ import {
     getSavedQuery,
     getSavedNominationIds
 } from './util/state';
-import { SearchRequest } from './api/movie';
 
 import './styles/App.css';
 import './styles/Loader.css';
-
-// TODO: Update Card UI for posters
-// TODO: Add unit tests
 
 // Consume the debounce hook
 const useSearchMovies = (initialState: SearchRequest) => useDebouncedSearch(initialState, ((query: SearchRequest) => searchMovies(query)));
@@ -34,6 +30,9 @@ const useSearchMovies = (initialState: SearchRequest) => useDebouncedSearch(init
 export default function App() {
     // Fetch initial state from local storage (if it exists)
     const initialQuery = getSavedQuery();
+    
+    // don't need setInitialNominations but it needs to be a state variable
+    // eslint-disable-next-line
     const [initialNominations, setInitialNominations] = useState(getSavedNominations());
 
     // Initialize state variables
