@@ -13,6 +13,14 @@ export default function List({ movies, onSelect, type, query }
     : {movies: Movie[], onSelect: any, type: ListType, query: string}) {
 
     const [openCard, setOpenCard] = useState<string>('');
+    
+    const handleSelect = (e: React.MouseEvent<HTMLElement>, movie: Movie) => {
+        if (openCard !== '' && openCard === movie.id) {
+            setOpenCard(''); // Ensure it doesn't persist as open when moving between lists
+        }
+        onSelect(movie);
+        e.stopPropagation(); // Stop the parent div's onClick from firing
+    }
 
     const onClick = (id: string) => {
         if (openCard === id) {
@@ -26,8 +34,7 @@ export default function List({ movies, onSelect, type, query }
         return (
             <Flipper
                 flipKey={openCard}
-                className="staggered-list-content"
-                spring="gentle"
+                spring="veryGentle"
                 staggerConfig={{
                     card: {
                         reverse: openCard !== ''
@@ -44,14 +51,14 @@ export default function List({ movies, onSelect, type, query }
                                     <ExpandedMovieCard
                                         movie={movie} 
                                         type={type} 
-                                        onSelect={onSelect} 
+                                        onSelect={handleSelect} 
                                         onClick={onClick} 
                                     />
                                 ) : (
                                     <MovieCard 
                                         movie={movie} 
                                         type={type} 
-                                        onSelect={onSelect} 
+                                        onSelect={handleSelect} 
                                         onClick={onClick} 
                                     />
                                 )

@@ -20,17 +20,10 @@ import {
     getSavedQuery,
     getSavedNominationIds
 } from './util/state';
+import { SearchRequest } from './api/movie';
 
 import './styles/App.css';
 import './styles/Loader.css';
-
-interface SearchRequest {
-    s: string;
-    type: string;
-    year: string;
-    page: number;
-    query: string;
-}
 
 // TODO: Update Card UI for posters
 // TODO: Add unit tests
@@ -97,12 +90,19 @@ export default function App() {
                 ids.push(n.id); queries.push(n.query);
             })
             fetchMovies(ids, queries);
+        } else {
+            setNominationsLoading(false);
         }
 
         // Set movies from search result
         if (!searchResult.loading) {
-            setNominationsLoading(false);
-            fetchMovies(searchResult.result, []);
+            if (query.s !== '') {
+                setNominationsLoading(false);
+                fetchMovies(searchResult.result, []);
+            } else {
+                setMovies([]);
+                setMoviesLoading(false);
+            }
         }
 
         if (query.s === '') {
@@ -203,7 +203,7 @@ export default function App() {
             <div className="lists">
                 {/* Movie List */}
                 <div className="list-container">
-                    <h3>{query.s === '' ? 'Results' : `Results for "${query.s}"`}</h3>
+                    <h3 className="subtitle">{query.s === '' ? 'Results' : `Results for "${query.s}"`}</h3>
                     { moviesLoading === false ? (
                         <List
                             query={query.s}
@@ -222,7 +222,7 @@ export default function App() {
 
                 {/* Nominations List */}
                 <div className="list-container">
-                    <h3>{ShoppyConstants.NOMINATIONS_LIST_TITLE}</h3>
+                    <h3 className="subtitle">{ShoppyConstants.NOMINATIONS_LIST_TITLE}</h3>
                     { nominationsLoading === false ? (
                         <List
                             query={query.s}

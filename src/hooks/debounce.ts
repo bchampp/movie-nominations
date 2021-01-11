@@ -23,7 +23,7 @@ export const useDebouncedSearch = (initialState: SearchRequest, searchFunction: 
     });
   
     const debouncedSearchFunction = useConstant(() =>
-      AwesomeDebouncePromise(searchFunction, 300)
+      AwesomeDebouncePromise(searchFunction, 200)
     );
   
     // Callback run everytime text changes, but through debounce

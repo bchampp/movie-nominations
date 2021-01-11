@@ -13,8 +13,6 @@ export interface SearchRequest {
   query: string; 
 }
 
-// TODO: Chain the .then() for these functions
-
 /**
  * Search function for OMDB API. Consumed by custom debounce hook.
  * @param request. The Query Request object.
