@@ -7,6 +7,9 @@ The implementation for the project can be found inside the `src` folder, which c
 
 I chose to implement this in TypeScript since I use TS for my work already, and don't have much experience writing react components in TS. 
 
+## Design
+https://www.figma.com/file/rhelRGBy1cl3FHE6cSAXu7/The-Shoppies?node-id=0%3A1
+
 ## Running locally 
 To run this project locally, follow these steps. 
 
@@ -28,3 +31,4 @@ yarn
 `
 npm start
 `
+

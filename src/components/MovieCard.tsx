@@ -2,83 +2,98 @@
  * Movie Card Component - renders movie information and nominate/remove button.
  */
 
-import React from 'react';
-import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles'
-import Collapse from '@material-ui/core/Collapse';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Flipped } from 'react-flip-toolkit';
 import { ListType } from '../constants/button';
 import { Movie } from '../models/movie';
-import '../styles/App.css';
+import '../styles/Card.css';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-    //   maxWidth: 345,
-    },
-    media: {
-      height: 0,
-      paddingTop: '56.25%', // 16:9
-    },
-    expand: {
-        transform: 'rotate(0deg)',
-        marginLeft: 'auto',
-        transition: theme.transitions.create('transform', {
-          duration: theme.transitions.duration.shortest,
-        }),
-      },
-      expandOpen: {
-        transform: 'rotate(180deg)',
-      },
-  }));
+const createCardFlipId = (index: string) => `listItem-${index}`;
 
-export default function MovieCard({movie, type, onSelect }
-    : {movie: Movie, type: ListType, onSelect: any}) {
-    const classes = useStyles();
-    const [expanded, setExpanded] = React.useState(false);
+const shouldFlip = (index: any) => (prev: any, current: any) =>
+  index === prev || index === current;
+
+export function MovieCard({movie, type, onSelect, onClick}
+    : {movie: Movie, type: ListType, onSelect: any, onClick: any}) {
     
-    const buttonText = type;
-
-    const handleExpandClick = () => {
-        setExpanded(!expanded);
-    };
-
     return (
-        <li className="list-item">
-            <Card className={classes.root}>
-                <CardHeader
-                    title={movie.title}
-                    subheader={movie.year}
-                />
-                    <Button variant="contained" disabled={movie.disabled} onClick={() => onSelect(movie)}>
-                        {buttonText}
-                    </Button>
-                    <IconButton
-                        className={clsx(classes.expand, {
-                            [classes.expandOpen]: expanded,
-                        })}
-                        onClick={handleExpandClick}
-                        aria-expanded={expanded}
-                        aria-label="show more"
-                        >
-                        <ExpandMoreIcon />
-                    </IconButton>
-                {/* Show movie poster when user selects "show more" */}
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                    <CardContent>
-                    <CardMedia
-                        className={classes.media}
-                        image={movie.poster}
-                        title={movie.title}
-                    />
-                    </CardContent>
-                </Collapse>
-            </Card>
-        </li>
+      <Flipped
+      flipId={createCardFlipId(movie.id)}
+      stagger="card"
+      shouldInvert={shouldFlip(movie.id)}
+    >
+      <div className="listItem" onClick={() => onClick(movie.id)}>
+        <Flipped inverseFlipId={createCardFlipId(movie.id)}>
+          <div className="listItemContent">
+            <Flipped
+              flipId={`avatar-${movie.id}`}
+              stagger="card-content"
+              shouldFlip={shouldFlip(movie.id)}
+              delayUntil={createCardFlipId(movie.id)}
+            >
+              <div className="avatar" />
+            </Flipped>
+            <div className="description">
+            <Flipped
+                  flipId={`title-${movie.id}`}
+                  stagger="card-content"
+                  shouldFlip={shouldFlip(movie.id)}
+                  delayUntil={createCardFlipId(movie.id)}
+                >
+              <h4>{movie.title}</h4>
+              </Flipped>
+              <Flipped
+                  flipId={`genre-${movie.id}`}
+                  stagger="card-content"
+                  shouldFlip={shouldFlip(movie.id)}
+                  delayUntil={createCardFlipId(movie.id)}
+                >
+              <h4>{movie.genre}</h4>
+              </Flipped>
+              <Flipped
+                  flipId={`actors-${movie.id}`}
+                  stagger="card-content"
+                  shouldFlip={shouldFlip(movie.id)}
+                  delayUntil={createCardFlipId(movie.id)}
+                >
+              <h4>{movie.actors}</h4>
+              </Flipped>
+            </div>
+          </div>
+        </Flipped>
+      </div>
+    </Flipped>
     )
+}
+
+export function ExpandedMovieCard({movie, type, onSelect, onClick}
+  : {movie: Movie, type: ListType, onSelect: any, onClick: any}) {
+  return (
+    <Flipped
+      flipId={createCardFlipId(movie.id)}
+      stagger="card"
+      onStart={el => {
+        setTimeout(() => {
+          el.classList.add("animated-in");
+        }, 400);
+      }}
+    >
+      <div className="expandedListItem" onClick={() => onClick(movie.id)}>
+        <Flipped inverseFlipId={createCardFlipId(movie.id)}>
+          <div className="expandedListItemContent">
+            <Flipped
+              flipId={`avatar-${movie.id}`}
+              stagger="card-content"
+              delayUntil={createCardFlipId(movie.id)}
+            >
+              <div className="avatar avatarExpanded" />
+            </Flipped>
+            <div className="description">{movie.title}
+            </div>
+            <div className="additional-content">{movie.genre}
+            </div>
+          </div>
+        </Flipped>
+      </div>
+    </Flipped>
+  )
 }

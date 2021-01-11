@@ -2,7 +2,7 @@ export default class ShoppyConstants {
     /**
      * OMBD API prefix url. 
      */
-    public static OMBD_API_PREFIX = "https://www.omdbapi.com/";
+    public static OMBD_API_PREFIX = "https://www.omdbapi.com/?";
 
     /**
      * OMBD Api Key.
@@ -22,6 +22,11 @@ export default class ShoppyConstants {
      * List title for empty results list.
      */
     public static RESULTS_EMPTY_TITLE = "Results";
+
+    /**
+     * List title for empty results list.
+     */
+    public static NO_SEARCH_PROVIDED = "Please enter a search term.";
 
     /**
      * Text when no movie results are found. 
