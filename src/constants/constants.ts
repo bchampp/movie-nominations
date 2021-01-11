@@ -24,6 +24,11 @@ export default class ShoppyConstants {
     public static RESULTS_EMPTY_TITLE = "Results";
 
     /**
+     * List title for empty results list.
+     */
+    public static NO_SEARCH_PROVIDED = "Please enter a search term.";
+
+    /**
      * Text when no movie results are found. 
      */
     public static RESULTS_EMPTY_MESSAGE = "No results found.";
