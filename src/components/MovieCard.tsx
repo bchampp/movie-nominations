@@ -30,7 +30,7 @@ export function MovieCard({ movie, type, onSelect, onClick }
               stagger="card-poster"
               shouldFlip={shouldFlip(movie.id)}
             >
-              <img src={movie.poster} className="poster" />
+              <img src={movie.poster} className="poster" alt="poster" />
             </Flipped>
             <div className="description">
               <Flipped
@@ -76,7 +76,7 @@ export function MovieCard({ movie, type, onSelect, onClick }
                     <Button
                       variant="contained"
                       disabled={movie.disabled}
-                      color={type == ListType.RESULTS ? "primary" : "secondary"}
+                      color={type === ListType.RESULTS ? "primary" : "secondary"}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(e, movie)}
                     >
                       {type === ListType.RESULTS ? "Nominate" : "Remove"}
@@ -119,7 +119,7 @@ export function ExpandedMovieCard({ movie, type, onSelect, onClick }
                 stagger="card-poster"
                 // delayUntil={createCardFlipId(movie.id)}
               >
-                <img src={movie.poster} className="poster posterExpanded" />
+                <img src={movie.poster} className="poster posterExpanded" alt="poster"/>
               </Flipped>
               <div className="expandedDescription">
                 <Flipped
@@ -183,7 +183,7 @@ export function ExpandedMovieCard({ movie, type, onSelect, onClick }
                   <Button
                     variant="contained"
                     disabled={movie.disabled}
-                    color={type == ListType.RESULTS ? "primary" : "secondary"}
+                    color={type === ListType.RESULTS ? "primary" : "secondary"}
                     onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(e, movie)}
                   >
                     {type === ListType.RESULTS ? "Nominate" : "Remove"}
